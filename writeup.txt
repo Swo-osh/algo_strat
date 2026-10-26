@@ -1,0 +1,116 @@
+VIX Term Structure Mean Reversion Strategy
+Writeup Checklist and Evidence Plan
+
+Submission constraint
+- Target 2-3 pages of written content plus no more than 1 page of charts and tables.
+- Keep the final pitch concise: state the hypothesis, define the rules, show the evidence, and explain when the strategy fails.
+- Replace every [INSERT RESULT] field below with output from the final backtest. Do not claim performance before running the analysis.
+
+1. Core concept: explain the trade in one paragraph
+- State the thesis: when short-term implied volatility becomes unusually high relative to medium-term implied volatility, the shock is often temporary and can create a short-term equity rebound opportunity.
+- Define the signal clearly: ratio = VIX / VIX3M.
+- Explain the regimes:
+	- ratio below 1.0: normal contango.
+	- ratio above 1.0: backwardation.
+	- ratio above the chosen entry threshold: extreme backwardation and a trade signal.
+- State the trade precisely: enter long SPY on the next session after the ratio crosses the threshold; exit when the ratio falls below 1.0 or when the maximum holding period is reached.
+- Make the framing explicit: this is a volatility mean-reversion trade expressed through SPY, not a prediction that equities always rise.
+
+2. Economic rationale: explain why the edge may exist
+- VIX represents expected 30-day S&P 500 volatility; VIX3M represents expected 90-day volatility.
+- In ordinary conditions, near-term uncertainty is usually lower than longer-term uncertainty, producing contango.
+- During a shock, demand for immediate downside protection can push VIX above VIX3M, producing backwardation.
+- The hypothesis is that panic pricing can overshoot the likely persistence of the shock; as uncertainty normalizes, volatility falls and equities may rebound.
+- Explain the behavioral and market-mechanics intuition: urgent hedging demand, forced deleveraging, and dealer/investor repositioning can amplify short-term moves.
+- Add a limitation to the rationale: a crisis can be persistent, so backwardation is not automatically a buy signal.
+
+3. Detailed implementation: give reproducible rules
+- Data:
+	- VIX: ^VIX.
+	- VIX3M: ^VIX3M.
+	- Equity instrument: SPY adjusted close.
+	- Cash/defensive comparison: SHY adjusted close.
+	- Source and sample dates: [INSERT DATA SOURCE AND SAMPLE WINDOW].
+- Signal construction:
+	- Compute VIX / VIX3M each trading day.
+	- Entry: ratio crosses above [INSERT ENTRY THRESHOLD].
+	- Entry timing: next trading day to avoid look-ahead bias.
+	- Exit: ratio falls below [INSERT EXIT THRESHOLD] or [INSERT MAX HOLD] trading days pass.
+	- Do not open overlapping trades; document this choice.
+- Portfolio construction:
+	- State notional or position sizing rule: [INSERT POSITION SIZE].
+	- State whether uninvested capital earns SHY returns.
+	- State transaction-cost assumption: [INSERT COST IN BASIS POINTS].
+	- State whether dividends, slippage, borrow costs, and taxes are included or excluded.
+- Explain why each parameter was selected and show that results are not dependent on one arbitrary threshold.
+
+4. Risk assessment and controls
+- Regime persistence: backwardation can last for weeks or months during a major crisis; show the worst event and the resulting drawdown.
+- Gap risk: overnight equity losses can exceed a stop or intended risk limit.
+- Model risk: VIX/VIX3M may identify stress without identifying the timing of the equity rebound.
+- Crowding and liquidity risk: many investors may attempt similar short-volatility trades during a reversal.
+- Instrument risk: if using SVXY or VIX futures in a future version, discuss roll yield, leverage, path dependence, and potential for severe losses. Do not imply SPY and short-volatility instruments have identical exposures.
+- Concentration risk: signals may cluster around a small number of crisis periods.
+- Controls to describe:
+	- maximum holding period;
+	- position-size cap;
+	- reduced sizing for very severe inversions;
+	- one active trade at a time;
+	- drawdown or volatility stop;
+	- pause/review rule if the signal remains extreme.
+- State the failure condition: if the economic shock persists rather than mean-reverts, the strategy can lose money.
+
+5. Capital and liquidity analysis
+- Explain why SPY is liquid and practical for implementation.
+- Report average holding period, number of trades, average exposure, and turnover.
+- Report the assumed notional and translate results into dollars: [INSERT NOTIONAL], [INSERT AVERAGE PNL], [INSERT WORST TRADE].
+- Discuss capacity qualitatively: execution should be scalable in SPY, but capacity is limited by market impact, entry timing, and the concentration of signals during stressed markets.
+- Explain that liquidity is usually worst precisely when the strategy wants to enter.
+- If the final proposal uses futures, replace this section with contract size, margin, roll schedule, open interest, and position limits.
+
+6. Analytical evidence: numbers that must appear in the writeup
+- Backtest window and data-cleaning decisions.
+- Total number of trades and average trades per year.
+- Win rate, average trade return, median trade return, best trade, and worst trade.
+- Average and maximum holding period.
+- Total return, annualized return, annualized volatility, Sharpe ratio, and maximum drawdown.
+- Market exposure percentage and transaction-cost assumption.
+- Compare against SPY buy-and-hold and SHY/cash returns over the same dates.
+- Report results before and after transaction costs.
+- Report development/in-sample and out-of-sample results separately. Use an out-of-sample period that was not used to choose the threshold.
+- Include crisis-period results for at least 2007-2009, 2020, and 2022, or explain why a period is unavailable.
+- Include parameter sensitivity for thresholds 1.00, 1.05, 1.10, and 1.20 and holding periods 10, 20, and 30 days.
+- Add uncertainty: confidence intervals, bootstrap results, or a t-test against unconditional SPY forward returns.
+- Discuss sample-size risk if the number of independent events is small; avoid presenting one high Sharpe ratio as proof of a durable edge.
+
+7. Required charts and tables for the one-page evidence section
+- Figure 1: VIX/VIX3M ratio through time.
+	- Plot the ratio, horizontal line at 1.0, entry-threshold line, and entry markers.
+	- Label major stress periods so the reader can see whether signals cluster.
+- Figure 2: cumulative wealth comparison.
+	- Plot strategy equity, SPY buy-and-hold, and SHY/cash on the same scale as growth of $1.
+	- Include transaction costs in the primary strategy line.
+- Figure 3, if space permits: drawdown comparison.
+	- Show strategy drawdown versus SPY drawdown, with the worst drawdown labeled.
+- Table 1: headline performance.
+	- Trades, win rate, average trade return, annualized return, volatility, Sharpe, max drawdown, exposure, and costs.
+- Table 2: robustness.
+	- Threshold/holding-period sensitivity and development versus out-of-sample results.
+- Keep figures readable in print: large labels, clear legends, consistent dates, and no more than two main colors plus benchmark lines.
+
+8. Final conclusion paragraph
+- Answer whether the evidence supports the economic hypothesis.
+- State the strongest result and the most important weakness.
+- Explain the conditions under which the strategy should be deployed, reduced, or rejected.
+- Avoid words such as "guaranteed," "always," or "risk-free."
+- End with the next research step: futures implementation, better volatility data, regime filters, or live/paper-trading validation.
+
+Final pre-submission checklist
+- [ ] All six required sections are present: concept, rationale, implementation, risk, capital/liquidity, and evidence.
+- [ ] Every performance number comes from the same documented backtest and date range.
+- [ ] No look-ahead bias: signals use information available before the trade entry.
+- [ ] Costs and realistic execution assumptions are disclosed.
+- [ ] SPY exposure is clearly distinguished from direct short-volatility exposure.
+- [ ] Out-of-sample and crisis results are included.
+- [ ] At least two charts and one compact performance table fit within the one-page limit.
+- [ ] The final document is 2-3 pages of writing plus at most 1 page of visuals.
